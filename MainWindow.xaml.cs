@@ -37,6 +37,9 @@ namespace ToDo_NewLogic
         private TaskManager taskManager;
         private bool hasUnsavedChanges = false; //TO TRACK THE DATAGRID UPD
 
+        private TodoListManager todoListManager = new TodoListManager();
+        private FileManager fileManager = new FileManager();
+
         public MainWindow()
         {
             InitializeComponent();
