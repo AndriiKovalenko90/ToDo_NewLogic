@@ -29,41 +29,61 @@ namespace ToDo_NewLogic
     /// </summary>
     public partial class MainWindow : Window
     {
-        private List<TodoList> todoLists = new List<TodoList>(); // Declare the todoLists variable at the class level
-        
-        private List<string> recentTodoLists = new List<string>();
-        private TodoList activeTodoList = null;
-        //private BindingList<Task> Tasks = new BindingList<Task>();
-        private TaskManager taskManager;
         private bool hasUnsavedChanges = false; //TO TRACK THE DATAGRID UPD
+        //private List<TodoList> todoLists = new List<TodoList>(); // Declare the todoLists variable at the class level
 
-        private TodoListManager todoListManager = new TodoListManager();
+        //private List<string> recentTodoLists = new List<string>();
+        //private TodoList activeTodoList = null;
+        ////private BindingList<Task> Tasks = new BindingList<Task>();
+        //private TaskManager taskManager;
+
+        private TodoListManager todoListManager;
+        private TaskManager taskManager;
         private FileManager fileManager = new FileManager();
+        private TodoList activeTodoList = null;
+        private List<TodoList> todoLists;
+        private List<string> recentTodoLists;
 
         public MainWindow()
         {
             InitializeComponent();
-            IOHelper ioHelper = new IOHelper("todoLists.json");
-            todoLists = ioHelper.LoadTodoLists();
 
-            // Populate the RecentLists ListBox with the titles of the loaded todo lists
-            recentTodoLists = todoLists.Select(todoList => todoList.Title).ToList();
-            RecentLists.Items.Clear();
-
-            if (recentTodoLists.Any())
-            {
-                RecentLists.ItemsSource = recentTodoLists;
-            }
-
+            todoListManager = new TodoListManager();
             taskManager = new TaskManager();
+
+            //todoLists = todoListManager.LoadTodoLists();
+
+            //if (RecentLists.SelectedItem != null)
+            //{
+            //    string selectedTodoListTitle = RecentLists.SelectedItem.ToString();
+            //    TodoList selectedTodoList = todoListManager.GetTodoListByTitle(selectedTodoListTitle);
+
+            //    if (selectedTodoList != null)
+            //    {
+            //        taskManager.LoadTasks(selectedTodoList.FilePath);
+            //        TasksDataGrid.ItemsSource = taskManager.Tasks;
+            //    }
+            //}
+
+            //// Populate the RecentLists ListBox with the titles of the loaded todo lists
+            //todoLists = 
+            //recentTodoLists = todoLists.Select(todoList => todoList.Title).ToList();
+            //RecentLists.Items.Clear();
+
+            //if (recentTodoLists.Any())
+            //{
+            //    RecentLists.ItemsSource = recentTodoLists;
+            //}
+
+            //taskManager = new TaskManager();
             
 
 
-            // Subscribe to DataGrid events here
-            TasksDataGrid.BeginningEdit += TasksDataGrid_BeginningEdit;
-            TasksDataGrid.CellEditEnding += TasksDataGrid_CellEditEnding;
+            //// Subscribe to DataGrid events here
+            //TasksDataGrid.BeginningEdit += TasksDataGrid_BeginningEdit;
+            //TasksDataGrid.CellEditEnding += TasksDataGrid_CellEditEnding;
 
-            BtnSave.IsEnabled = false;
+            //BtnSave.IsEnabled = false;
         }
 
         
@@ -82,10 +102,10 @@ namespace ToDo_NewLogic
 
 
                 TodoList newTodoList = new TodoList(todoListTitle, filePath);
-                todoLists.Insert(0, newTodoList);
+                todoListManager.AddTodoList(newTodoList);
 
-                IOHelper ioHelper = new IOHelper("todoLists.json");
-                ioHelper.SaveTodoLists(todoLists);
+                //IOHelper ioHelper = new IOHelper("todoLists.json");
+                //ioHelper.SaveTodoLists(todoLists);
 
                 recentTodoLists.Insert(0, todoListTitle);
                 //RecentLists.ItemsSource = null;
@@ -268,10 +288,7 @@ namespace ToDo_NewLogic
         private void AddTodoListItem_Click(object sender, RoutedEventArgs e)
         {
             AddItemModal addItemModal = new AddItemModal();
-
-            
             bool? result = addItemModal.ShowDialog();
-
             
             if (result == true)
             {

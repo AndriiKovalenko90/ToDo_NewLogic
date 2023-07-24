@@ -10,6 +10,7 @@ namespace ToDo_NewLogic.Managers
     internal class TodoListManager
     {
         private List<TodoList> todoLists = new List<TodoList>();
+        private FileManager fileManager = new FileManager();
 
         public List<string> GetRecentTodoLists()
         {
@@ -18,15 +19,32 @@ namespace ToDo_NewLogic.Managers
 
         public void LoadTodoLists()
         {
-            FileManager fileManager = new FileManager();
             todoLists = fileManager.LoadTodoListsFromFile("todoLists.json");
-            
         }
 
         public void SaveTodoLists()
         {
-            FileManager filemanager = new FileManager();
-            filemanager.SaveTodoListsToFile("todoLists.json", todoLists);
+            fileManager.SaveTodoListsToFile("todoLists.json", todoLists);
+        }
+
+        public void AddTodoList(TodoList t)
+        {
+            todoLists.Insert(0, t);
+        }
+
+        public void RemoveTodoList(TodoList t)
+        {
+            todoLists.Remove(t);
+        }
+
+        public void SetActiveTodoList(TodoList t)
+        {
+
+        }
+
+        public TodoList GetTodoListByTitle(string todoListTitle)
+        {
+            return todoLists.Find(x => x.Title== todoListTitle);
         }
     }
 }
