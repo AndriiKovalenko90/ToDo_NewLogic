@@ -1,0 +1,25 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.4.33403.182
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ToDo_NewLogic", "ToDo_NewLogic.csproj", "{F86F3313-FD70-436E-89A2-21C4EF587DF6}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{F86F3313-FD70-436E-89A2-21C4EF587DF6}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F86F3313-FD70-436E-89A2-21C4EF587DF6}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F86F3313-FD70-436E-89A2-21C4EF587DF6}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F86F3313-FD70-436E-89A2-21C4EF587DF6}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {34305EAF-5CDD-4733-9A31-0C8363678BE4}
+	EndGlobalSection
+EndGlobal

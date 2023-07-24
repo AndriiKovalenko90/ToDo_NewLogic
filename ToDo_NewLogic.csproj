@@ -1,0 +1,28 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net7.0-windows</TargetFramework>
+    <Nullable>enable</Nullable>
+    <UseWPF>true</UseWPF>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <None Remove="Resources\Buttons\AddTaskBtn.png" />
+    <None Remove="Resources\Buttons\greenCheckmark.png" />
+    <None Remove="Resources\Buttons\redMinus.png" />
+    <None Remove="Resources\Buttons\resetBtn.png" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Resource Include="Resources\Buttons\AddTaskBtn.png" />
+    <Resource Include="Resources\Buttons\redMinus.png" />
+    <Resource Include="Resources\Buttons\greenCheckmark.png" />
+    <Resource Include="Resources\Buttons\resetBtn.png" />
+  </ItemGroup>
+
+</Project>
