@@ -16,6 +16,18 @@ namespace ToDo_NewLogic.Managers
             Tasks = new BindingList<Task>();
         }
 
+        public void LoadTasks(string filePath)
+        {
+            FileManager fileManager = new FileManager();
+            Tasks = fileManager.LoadTasksFromFile(filePath);
+        }
+
+        public void SaveTasks(string filePath)
+        {
+            FileManager fileManager = new FileManager();
+            fileManager.SaveTasksToFile(filePath, Tasks);
+        }
+
         public void AddTask(Task task)
         {
             Tasks.Add(task);
@@ -26,9 +38,11 @@ namespace ToDo_NewLogic.Managers
             Tasks.Remove(task);
         }
 
-        public void EditTask(Task task, string newDescription)
-        {
-            throw new NotImplementedException();
-        }
+        //public void EditTask(Task task, string newDescription)
+        //{
+        //    throw new NotImplementedException();
+        //}
+
+
     }
 }
