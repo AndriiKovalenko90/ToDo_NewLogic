@@ -14,7 +14,6 @@ namespace ToDo_NewLogic.Managers
     {
         public BindingList<Task> LoadTasksFromFile(string filePath)
         {
-            //Loadtasks from the specified file (filePath and return tham)
             string json = File.ReadAllText(filePath);
             BindingList<Task> tasks = JsonConvert.DeserializeObject<BindingList<Task>>(json);
             return tasks;
@@ -22,7 +21,6 @@ namespace ToDo_NewLogic.Managers
 
         public void SaveTasksToFile(string filePath, BindingList<Task> tasks)
         {
-            // Save the provided tasks to the specified file(filePath)
             string json = JsonConvert.SerializeObject(tasks);
             File.WriteAllText(filePath, json);
         }
