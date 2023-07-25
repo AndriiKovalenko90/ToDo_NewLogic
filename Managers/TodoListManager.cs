@@ -17,12 +17,12 @@ namespace ToDo_NewLogic.Managers
             return todoLists.Select(x => x.Title).ToList();
         }
 
-        public void LoadTodoLists()
+        public List<TodoList> LoadTodoLists()
         {
-            todoLists = fileManager.LoadTodoListsFromFile("todoLists.json");
+            return fileManager.LoadTodoListsFromFile("todoLists.json");
         }
 
-        public void SaveTodoLists()
+        public void SaveTodoLists(List<TodoList> todoLists)
         {
             fileManager.SaveTodoListsToFile("todoLists.json", todoLists);
         }
@@ -37,14 +37,17 @@ namespace ToDo_NewLogic.Managers
             todoLists.Remove(t);
         }
 
-        public void SetActiveTodoList(TodoList t)
-        {
 
-        }
+        //public void SetActiveTodoList(TodoList t)
+        //{
+        //    activeTodoList = t;
+        //}
 
         public TodoList GetTodoListByTitle(string todoListTitle)
         {
             return todoLists.Find(x => x.Title== todoListTitle);
         }
+
+
     }
 }

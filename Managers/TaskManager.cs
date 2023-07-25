@@ -20,6 +20,7 @@ namespace ToDo_NewLogic.Managers
         {
             FileManager fileManager = new FileManager();
             Tasks = fileManager.LoadTasksFromFile(filePath);
+
         }
 
         public void SaveTasks(string filePath)
