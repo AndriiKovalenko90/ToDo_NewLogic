@@ -25,4 +25,8 @@
     <Resource Include="Resources\Buttons\resetBtn.png" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="Helpers\" />
+  </ItemGroup>
+
 </Project>
