@@ -17,7 +17,7 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 
-using ToDo_NewLogic.Helpers;
+//using ToDo_NewLogic.Helpers;
 using ToDo_NewLogic.Managers;
 using ToDo_NewLogic.Utilities;
 using ToDo_NewLogic.Models;
@@ -55,7 +55,7 @@ namespace ToDo_NewLogic
 
         private void InitializeData()
         {
-            todoLists = todoListManager.LoadTodoLists();
+            todoLists = todoListManager.GetTodoLists();
             taskManager.Tasks = new BindingList<Task>();
             TasksDataGrid.ItemsSource = taskManager.Tasks;
 
@@ -347,7 +347,7 @@ namespace ToDo_NewLogic
             if (activeTodoList != null)
             {
                 taskManager.SaveTasks(activeTodoList.FilePath);
-                todoListManager.SaveTodoLists(todoLists);
+                todoListManager.SetTodoLists(todoLists);
                 hasUnsavedChanges = false;
                 BtnSave.IsEnabled = false;
             }
