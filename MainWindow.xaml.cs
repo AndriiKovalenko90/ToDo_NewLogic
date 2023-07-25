@@ -19,8 +19,10 @@ using System.Windows.Navigation;
 
 using ToDo_NewLogic.Helpers;
 using ToDo_NewLogic.Managers;
+using ToDo_NewLogic.Utilities;
 using ToDo_NewLogic.Models;
 using ToDo_NewLogic.Views;
+using static ToDo_NewLogic.Utilities.TodoListUtility;
 
 namespace ToDo_NewLogic
 {
@@ -29,12 +31,14 @@ namespace ToDo_NewLogic
     /// </summary>
     public partial class MainWindow : Window
     {
+
         private bool hasUnsavedChanges = false; //TO TRACK THE DATAGRID UPD
         private TodoListManager todoListManager = new TodoListManager();
         private TaskManager taskManager = new TaskManager();
         private TodoList activeTodoList = null;
         private List<TodoList> todoLists;
         private List<string> recentTodoLists = null;
+        private TodoListUtility todoListUtility;
 
         public MainWindow()
         {
@@ -43,6 +47,10 @@ namespace ToDo_NewLogic
             UpdateRecentLists();
             LoadActiveTodoList();
             RefreshDataGrid();
+
+            todoListUtility = new TodoListUtility(todoListManager, taskManager, recentTodoLists);
+            todoListUtility.NewTodoListCreated += TodoListUtility_NewTodoListCreated;
+
         }
 
         private void InitializeData()
@@ -65,7 +73,17 @@ namespace ToDo_NewLogic
 
             BtnSave.IsEnabled = false;
         }
+        private void UpdateRecentLists()
+        {
+            // Filter the recentTodoLists to include only those that have corresponding files
+            recentTodoLists = recentTodoLists
+                .Where(title => todoLists.Any(todoList => todoList.Title == title && File.Exists(todoList.FilePath)))
+                .ToList();
 
+            // Update the ListBox with the filtered recentTodoLists
+            RecentLists.ItemsSource = null;
+            RecentLists.ItemsSource = recentTodoLists;
+        }
         private void LoadActiveTodoList()
         {
             if (RecentLists.SelectedItem != null)
@@ -84,42 +102,16 @@ namespace ToDo_NewLogic
                 }
             }
         }
+        private void RefreshDataGrid()
+        {
+            TasksDataGrid.ItemsSource = GetActiveTodoListTasks();
+        }
 
 
         //MAIN MENU BUTTONS
         private void BtnNew_Click(object sender, RoutedEventArgs e)
         {
-            var createNewTodoListWindow = new CreateNewTodoList();
-            createNewTodoListWindow.ShowDialog();
-
-            if (createNewTodoListWindow.DialogResult == true)
-            {
-                string todoListTitle = createNewTodoListWindow.TodoListTitle;
-                string filePath = $"{todoListTitle}.json";
-
-
-                TodoList newTodoList = new TodoList(todoListTitle, filePath);
-                todoListManager.AddTodoList(newTodoList);
-
-                //IOHelper ioHelper = new IOHelper("todoLists.json");
-                //ioHelper.SaveTodoLists(todoLists);
-
-                recentTodoLists.Insert(0, todoListTitle);
-                //RecentLists.ItemsSource = null;
-                //RecentLists.ItemsSource = recentTodoLists;
-
-
-                ContentMain.Visibility = Visibility.Visible;
-                
-
-                activeTodoList = newTodoList;
-                taskManager.Tasks = new BindingList<Task>();
-                SaveTasksForActiveTodoList();
-                RefreshDataGrid();
-                UpdateRecentLists();
-
-                RecentLists.SelectedItem = todoListTitle;
-            }
+            todoListUtility.CreateNewTodoList();
         }
 
         private void BtnOpen_Click(object sender, RoutedEventArgs e)
@@ -136,26 +128,24 @@ namespace ToDo_NewLogic
                 {
                     string jsonContent = File.ReadAllText(fileDialog.FileName);
                     BindingList<Task> loadedTasks = JsonConvert.DeserializeObject<BindingList<Task>>(jsonContent);
-                    //TasksDataGrid.ItemsSource = loadedTasks;
 
                     string openedTodoListTitle = Path.GetFileNameWithoutExtension(fileDialog.FileName);
                     TodoList existingTodoList = todoLists.FirstOrDefault(todoList => todoList.Title == openedTodoListTitle);
 
                     if (existingTodoList != null)
                     {
-                        // Todo list with the same title already exists, update its file path
                         existingTodoList.FilePath = fileDialog.FileName;
                     }
                     else
                     {
-                        // Todo list does not exist, create a new entry in the todoLists
                         string filePath = fileDialog.FileName;
                         TodoList newTodoList = new TodoList(openedTodoListTitle, filePath);
                         todoLists.Insert(0, newTodoList);
                     }
 
-                    IOHelper ioHelper = new IOHelper("todoLists.json");
-                    ioHelper.SaveTodoLists(todoLists);
+
+                    //IOHelper ioHelper = new IOHelper("todoLists.json");
+                    //ioHelper.SaveTodoLists(todoLists);
 
                     recentTodoLists.Insert(0, openedTodoListTitle);
                     RecentLists.ItemsSource = null;
@@ -243,8 +233,8 @@ namespace ToDo_NewLogic
                     todoLists.Insert(0, newTodoList);
 
                     // Save the updated todoLists list
-                    IOHelper ioHelper = new IOHelper("todoLists.json");
-                    ioHelper.SaveTodoLists(todoLists);
+                    //IOHelper ioHelper = new IOHelper("todoLists.json");
+                    //ioHelper.SaveTodoLists(todoLists);
 
                     // Update the recentTodoLists collection with the new title
                     recentTodoLists.Insert(0, newTodoListTitle);
@@ -348,13 +338,10 @@ namespace ToDo_NewLogic
         {
             hasUnsavedChanges = true;
         }
-
-        // Event handler for the DataGrid when the user finishes editing a cell
         private void TasksDataGrid_CellEditEnding(object sender, DataGridCellEditEndingEventArgs e)
         {
             hasUnsavedChanges = true;
         }
-
 
         private void RecentLists_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
@@ -399,27 +386,14 @@ namespace ToDo_NewLogic
         }
 
 
-        private void RefreshDataGrid()
-        {
-            TasksDataGrid.ItemsSource = GetActiveTodoListTasks();
 
-        }
 
         private void SaveChanges()
         {
             if (activeTodoList != null)
             {
-                // Save the tasks to the separate JSON file for the active todo list
-                //SaveTasksForActiveTodoList();
-
-                // Save the todoLists list
-                //IOHelper ioHelper = new IOHelper("todoLists.json");
-                //ioHelper.SaveTodoLists(todoLists);
-
                 taskManager.SaveTasks(activeTodoList.FilePath);
                 todoListManager.SaveTodoLists(todoLists);
-
-                // After saving, set hasUnsavedChanges to false and disable the BtnSave button.
                 hasUnsavedChanges = false;
                 BtnSave.IsEnabled = false;
             }
@@ -458,37 +432,21 @@ namespace ToDo_NewLogic
             }
         }
 
-        private void UpdateRecentLists()
-        {
-            // Filter the recentTodoLists to include only those that have corresponding files
-            recentTodoLists = recentTodoLists
-                .Where(title => todoLists.Any(todoList => todoList.Title == title && File.Exists(todoList.FilePath)))
-                .ToList();
 
-            // Update the ListBox with the filtered recentTodoLists
-            RecentLists.ItemsSource = null;
-            RecentLists.ItemsSource = recentTodoLists;
-        }
 
         private void CloseTodoList()
         {
             if (hasUnsavedChanges)
             {
-                // Ask the user if they want to save changes before closing the list
                 MessageBoxResult result = MessageBox.Show("Do you want to save changes?", "Save Changes", MessageBoxButton.YesNo, MessageBoxImage.Warning);
 
                 switch (result)
                 {
                     case MessageBoxResult.Yes:
-                        // Save the changes and close the list
                         SaveChanges();
                         break;
                     case MessageBoxResult.No:
-                        // Close the list without saving, do not reset the flag
                         break;
-                    //case MessageBoxResult.Cancel:
-                    //    Cancel the Close operation and stay on the current list
-                    //    return;
                 }
             }
 
@@ -499,6 +457,27 @@ namespace ToDo_NewLogic
             BtnSave.IsEnabled = false;
 
             RecentLists.SelectedItem = null;
+        }
+
+        private void MainWindow_Loaded(object sender, RoutedEventArgs e)
+        {
+            todoListUtility.NewTodoListCreated += TodoListUtility_NewTodoListCreated;
+        }
+
+        // Event handler for the NewTodoListCreated event
+        private void TodoListUtility_NewTodoListCreated(object sender, TodoList e)
+        {
+            //e == todolist
+            TodoList newTodoList = e;
+            recentTodoLists.Insert(0, newTodoList.Title);
+            ContentMain.Visibility = Visibility.Visible;
+            activeTodoList = newTodoList;
+            todoLists.Insert(0, newTodoList);
+            taskManager.Tasks = new BindingList<Task>();
+            SaveTasksForActiveTodoList();
+            RefreshDataGrid();
+            UpdateRecentLists();
+
         }
     }
 }

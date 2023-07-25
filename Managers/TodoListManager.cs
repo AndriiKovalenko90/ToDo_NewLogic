@@ -7,7 +7,7 @@ using ToDo_NewLogic.Models;
 
 namespace ToDo_NewLogic.Managers
 {
-    internal class TodoListManager
+    public class TodoListManager
     {
         private List<TodoList> todoLists = new List<TodoList>();
         private FileManager fileManager = new FileManager();
