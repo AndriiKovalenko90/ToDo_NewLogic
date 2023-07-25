@@ -38,12 +38,5 @@ namespace ToDo_NewLogic.Managers
         {
             Tasks.Remove(task);
         }
-
-        //public void EditTask(Task task, string newDescription)
-        //{
-        //    throw new NotImplementedException();
-        //}
-
-
     }
 }

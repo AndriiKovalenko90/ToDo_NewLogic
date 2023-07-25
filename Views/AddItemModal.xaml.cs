@@ -39,17 +39,12 @@ namespace ToDo_NewLogic.Views
             );
 
             NewItem = newItem;
-
-            // Set the DialogResult to true to indicate that the user clicked the "Add item" button
             DialogResult = true;
-
-            // Close the AddItemModal window
             Close();
         }
 
         private void TxtTitle_TextChanged(object sender, TextChangedEventArgs e)
         {
-            // Enable the "Add item" button if the Title is not empty, otherwise disable it.
             BtnAddTodoItem.IsEnabled = !string.IsNullOrWhiteSpace(TxtTitle.Text);
         }
 
