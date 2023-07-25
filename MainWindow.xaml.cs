@@ -30,63 +30,60 @@ namespace ToDo_NewLogic
     public partial class MainWindow : Window
     {
         private bool hasUnsavedChanges = false; //TO TRACK THE DATAGRID UPD
-        //private List<TodoList> todoLists = new List<TodoList>(); // Declare the todoLists variable at the class level
-
-        //private List<string> recentTodoLists = new List<string>();
-        //private TodoList activeTodoList = null;
-        ////private BindingList<Task> Tasks = new BindingList<Task>();
-        //private TaskManager taskManager;
-
-        private TodoListManager todoListManager;
-        private TaskManager taskManager;
-        private FileManager fileManager = new FileManager();
+        private TodoListManager todoListManager = new TodoListManager();
+        private TaskManager taskManager = new TaskManager();
         private TodoList activeTodoList = null;
         private List<TodoList> todoLists;
-        private List<string> recentTodoLists;
+        private List<string> recentTodoLists = null;
 
         public MainWindow()
         {
             InitializeComponent();
-
-            todoListManager = new TodoListManager();
-            taskManager = new TaskManager();
-
-            //todoLists = todoListManager.LoadTodoLists();
-
-            //if (RecentLists.SelectedItem != null)
-            //{
-            //    string selectedTodoListTitle = RecentLists.SelectedItem.ToString();
-            //    TodoList selectedTodoList = todoListManager.GetTodoListByTitle(selectedTodoListTitle);
-
-            //    if (selectedTodoList != null)
-            //    {
-            //        taskManager.LoadTasks(selectedTodoList.FilePath);
-            //        TasksDataGrid.ItemsSource = taskManager.Tasks;
-            //    }
-            //}
-
-            //// Populate the RecentLists ListBox with the titles of the loaded todo lists
-            //todoLists = 
-            //recentTodoLists = todoLists.Select(todoList => todoList.Title).ToList();
-            //RecentLists.Items.Clear();
-
-            //if (recentTodoLists.Any())
-            //{
-            //    RecentLists.ItemsSource = recentTodoLists;
-            //}
-
-            //taskManager = new TaskManager();
-            
-
-
-            //// Subscribe to DataGrid events here
-            //TasksDataGrid.BeginningEdit += TasksDataGrid_BeginningEdit;
-            //TasksDataGrid.CellEditEnding += TasksDataGrid_CellEditEnding;
-
-            //BtnSave.IsEnabled = false;
+            InitializeData();
+            UpdateRecentLists();
+            LoadActiveTodoList();
+            RefreshDataGrid();
         }
 
-        
+        private void InitializeData()
+        {
+            todoLists = todoListManager.LoadTodoLists();
+            taskManager.Tasks = new BindingList<Task>();
+            TasksDataGrid.ItemsSource = taskManager.Tasks;
+
+            //Initialize RecentList items
+            recentTodoLists = todoLists.Select(todoList => todoList.Title).ToList();
+            RecentLists.Items.Clear();
+            if (recentTodoLists.Any())
+            {
+                RecentLists.ItemsSource = recentTodoLists;
+            }
+
+            // Subscribe to DataGrid events here
+            TasksDataGrid.BeginningEdit += TasksDataGrid_BeginningEdit;
+            TasksDataGrid.CellEditEnding += TasksDataGrid_CellEditEnding;
+
+            BtnSave.IsEnabled = false;
+        }
+
+        private void LoadActiveTodoList()
+        {
+            if (RecentLists.SelectedItem != null)
+            {
+                string selectedTodoListTitle = RecentLists.SelectedItem.ToString();
+                activeTodoList = todoListManager.GetTodoListByTitle(selectedTodoListTitle);
+
+                if (activeTodoList != null)
+                {
+                    taskManager.LoadTasks(activeTodoList.FilePath);
+                    TasksDataGrid.ItemsSource = taskManager.Tasks;
+                }
+                else
+                {
+                    MessageBox.Show("Selected todo list not found.");
+                }
+            }
+        }
 
 
         //MAIN MENU BUTTONS
@@ -347,41 +344,6 @@ namespace ToDo_NewLogic
 
 
 
-
-        //private void Window_Loaded(object sender, RoutedEventArgs e)
-        //{
-        //    _ioHelper = new IOHelper(PATH);
-
-        //    try
-        //    {
-        //        _todoDataList = _ioHelper.LoadData();
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        MessageBox.Show(ex.Message);
-        //        Close();
-        //    }
-
-        //    TasksDataGrid.ItemsSource = _todoDataList;
-        //    _todoDataList.ListChanged += _todoDataList_ListChanged;
-
-        //}
-
-        //private void _todoDataList_ListChanged(object sender, ListChangedEventArgs e)
-        //{
-        //    if (e.ListChangedType == ListChangedType.ItemAdded || e.ListChangedType == ListChangedType.ItemDeleted || e.ListChangedType == ListChangedType.ItemChanged)
-        //    {
-        //        try
-        //        {
-        //            _ioHelper.SaveTasksToFile(sender);
-        //        }
-        //        catch (Exception ex)
-        //        {
-        //            MessageBox.Show(ex.Message);
-        //            Close();
-        //        }
-        //    }
-        //}
         private void TasksDataGrid_BeginningEdit(object sender, DataGridBeginningEditEventArgs e)
         {
             hasUnsavedChanges = true;
@@ -448,11 +410,14 @@ namespace ToDo_NewLogic
             if (activeTodoList != null)
             {
                 // Save the tasks to the separate JSON file for the active todo list
-                SaveTasksForActiveTodoList();
+                //SaveTasksForActiveTodoList();
 
                 // Save the todoLists list
-                IOHelper ioHelper = new IOHelper("todoLists.json");
-                ioHelper.SaveTodoLists(todoLists);
+                //IOHelper ioHelper = new IOHelper("todoLists.json");
+                //ioHelper.SaveTodoLists(todoLists);
+
+                taskManager.SaveTasks(activeTodoList.FilePath);
+                todoListManager.SaveTodoLists(todoLists);
 
                 // After saving, set hasUnsavedChanges to false and disable the BtnSave button.
                 hasUnsavedChanges = false;
