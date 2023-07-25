@@ -36,21 +36,4 @@ namespace ToDo_NewLogic.Helpers
             return new List<TodoList>();
         }
     }
-    //class IOHelper
-    //{
-    //    public static string FolderPath { get; set; } = Directory.GetCurrentDirectory();
-
-    //    public static void SaveTasksToFile(string filePath, BindingList<Task> tasks)
-    //    {
-    //        string json = JsonConvert.SerializeObject(tasks);
-    //        File.WriteAllText(filePath, json);
-    //    }
-
-    //    public static BindingList<Task> LoadTasksFromFile(string filePath)
-    //    {
-    //        string json = File.ReadAllText(filePath);
-    //        BindingList<Task> tasks = JsonConvert.DeserializeObject<BindingList<Task>>(json);
-    //        return tasks;
-    //    }
-    //}
 }
