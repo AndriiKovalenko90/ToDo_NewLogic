@@ -1,10 +1,7 @@
 ﻿using Newtonsoft.Json;
-using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.IO;
-using System.Linq;
-using System.Text;
 
 using ToDo_NewLogic.Models;
 
@@ -12,14 +9,14 @@ namespace ToDo_NewLogic.Managers
 {
     internal class FileManager
     {
-        public BindingList<Task> LoadTasksFromFile(string filePath)
+        public List<Task> LoadTasksFromFile(string filePath)
         {
             string json = File.ReadAllText(filePath);
-            BindingList<Task> tasks = JsonConvert.DeserializeObject<BindingList<Task>>(json);
+            var tasks = JsonConvert.DeserializeObject<List<Task>>(json);
             return tasks;
         }
 
-        public void SaveTasksToFile(string filePath, BindingList<Task> tasks)
+        public void SaveTasksToFile(string filePath, List<Task> tasks)
         {
             string json = JsonConvert.SerializeObject(tasks);
             File.WriteAllText(filePath, json);
