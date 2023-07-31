@@ -1,6 +1,7 @@
 ﻿using Microsoft.Win32;
 using Newtonsoft.Json;
 using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.IO;
 using System.Linq;
@@ -19,22 +20,67 @@ namespace ToDo_NewLogic
     public partial class MainWindow : Window
     {
         private bool _hasUnsavedChanges = false; //TO TRACK THE DATAGRID UPD
-        
-        //private readonly TodoListManager _todoListManager = new TodoListManager();
 
-        
+        private readonly TodoListManager _todoListManager = new TodoListManager();
+        private readonly string _todoListsFilePath = "todolists.json";
+
 
         public MainWindow()
         {
             InitializeComponent();
-        }
 
+            if (File.Exists(_todoListsFilePath))
+            {
+                // Load TodoLists from the file
+                _todoListManager.LoadToDoLists();
+
+                // Display the recent TodoLists in the left navigation panel
+                List<TodoList> recentTodoLists = _todoListManager.GetRecentTodoLists(9); // Displaying 5 most recent TodoLists
+                foreach (TodoList todoList in recentTodoLists)
+                {
+                    RecentLists.Items.Add(todoList.Title);
+                }
+                RecentListsLabel.Visibility = Visibility.Visible;
+                RecentLists.Visibility = Visibility.Visible;
+                // Hide the message
+                NoTodoListsMessage.Visibility = Visibility.Collapsed;
+            }
+            else
+            {
+                // Hide the RecentLists ListBox
+                RecentListsLabel.Visibility = Visibility.Collapsed;
+                RecentLists.Visibility = Visibility.Collapsed;
+                // Show the message
+                NoTodoListsMessage.Visibility = Visibility.Visible;
+            }
+        }
 
 
         //MAIN MENU BUTTONS
         private void BtnNew_Click(object sender, RoutedEventArgs e)
         {
-            
+            var createTodoListDialog = new CreateNewTodoList();
+            if (createTodoListDialog.ShowDialog() == true)
+            {
+                string todoListName = createTodoListDialog.TodoListTitle;
+
+                // Create a new TodoList with the provided name
+                TodoList newTodoList = new TodoList(todoListName, $"TodoLists/{todoListName}.json", new List<Task>());
+
+                string directoryPath = Path.GetDirectoryName(newTodoList.FilePath);
+                Directory.CreateDirectory(directoryPath);
+                // Add the new TodoList to the TodoListManager
+                _todoListManager.AddTodoList(newTodoList);
+
+                // Create the TodoList file
+                File.WriteAllText(newTodoList.FilePath, JsonConvert.SerializeObject(newTodoList));
+
+                // Update the RecentLists ListBox
+                RecentLists.Items.Add(newTodoList.Title);
+
+                // Save the TodoLists to the "todolists.json" file
+                _todoListManager.SaveTodoLists();
+            }
         }
 
         private void BtnOpen_Click(object sender, RoutedEventArgs e)

@@ -27,7 +27,13 @@ namespace ToDo_NewLogic.Views
 
         private void BtnCreateTodoList_Click(object sender, RoutedEventArgs e)
         {
-            TodoListTitle = TxtTodoListTitle.Text;
+            TodoListTitle = TxtTodoListTitle.Text.Trim();
+            if (string.IsNullOrWhiteSpace(TodoListTitle))
+            {
+                MessageBox.Show("Please enter a valid name for the TodoList.");
+                return;
+            }
+
             DialogResult = true;
         }
     }
