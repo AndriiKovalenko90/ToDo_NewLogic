@@ -11,11 +11,15 @@ namespace ToDo_NewLogic.Managers
 
         private List<TodoList> _todoLists = new List<TodoList>();
         
-        // private active string activeTodoListTitle
 
-        public List<string> GetRecentTodoLists()
+        public List<TodoList> GetTodoLists()
         {
-            return _todoLists.Select(x => x.Title).ToList();
+            return _todoLists.ToList();
+        }
+
+        public List<TodoList> GetRecentTodoLists(int count)
+        {
+            return _todoLists.OrderByDescending(todoList => todoList.AddedTimestamp).Take(count).ToList();
         }
 
         public List<TodoList> LoadToDoLists()
