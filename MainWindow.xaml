@@ -108,7 +108,7 @@
                         <RowDefinition />
                     </Grid.RowDefinitions>
                     <Label x:Name="RecentListsLabel" Content="        Recent lists:     " HorizontalAlignment="Center" FontSize="16" FontWeight="Bold" Background="#cedcf1" Margin="0"/>
-                    <ListBox x:Name="RecentLists" Grid.Row="1" Background="AliceBlue" ToolTip="Click to open a recently modified/opened list" BorderThickness="0,2,2,0" SelectionChanged="RecentLists_SelectionChanged">
+                    <ListBox x:Name="RecentLists" Grid.Row="1" Background="AliceBlue" ToolTip="Click to open a recently modified/opened list" BorderThickness="0,2,2,0">
                         <!--<ListBoxItem Margin="10,0">Item 1</ListBoxItem>
                         <ListBoxItem Margin="10,0">Item 2</ListBoxItem>
                         <ListBoxItem Margin="10,0">Item 3</ListBoxItem>

@@ -20,7 +20,7 @@ namespace ToDo_NewLogic
     {
         private bool _hasUnsavedChanges = false; //TO TRACK THE DATAGRID UPD
         
-        private readonly TodoListManager _todoListManager = new TodoListManager();
+        //private readonly TodoListManager _todoListManager = new TodoListManager();
 
         
 

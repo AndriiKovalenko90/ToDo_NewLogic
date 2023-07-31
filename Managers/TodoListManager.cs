@@ -47,8 +47,12 @@ namespace ToDo_NewLogic.Managers
 
         public void AddTask(Task task)
         {
-            var activeTodoList = _todoLists.FirstOrDefault(t => t.Title == activeTodoListTitle);
-            _taskManager.AddTask(activeTodoList, task);
+            _taskManager.AddTask(task);
+        }
+
+        public void RemoveTask(Task task)
+        {
+            _taskManager.RemoveTask(task);
         }
     }
 }
