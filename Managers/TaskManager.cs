@@ -1,26 +1,25 @@
-﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Linq;
-using System.Text;
+﻿using System.Collections.Generic;
 using ToDo_NewLogic.Models;
 
 namespace ToDo_NewLogic.Managers
 {
     public class TaskManager
     {
-        public BindingList<Task> Tasks { get; set; }
+        public List<Task> Tasks { get; private set; }
 
         public TaskManager()
         {
-            Tasks = new BindingList<Task>();
+        }
+
+        public List<Task> GetTasks()
+        {
+            return Tasks;
         }
 
         public void LoadTasks(string filePath)
         {
             FileManager fileManager = new FileManager();
             Tasks = fileManager.LoadTasksFromFile(filePath);
-
         }
 
         public void SaveTasks(string filePath)

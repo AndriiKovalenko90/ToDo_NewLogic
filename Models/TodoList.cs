@@ -1,24 +1,20 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.ComponentModel;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using ToDo_NewLogic.Managers;
 
 namespace ToDo_NewLogic.Models
 {
     public class TodoList
     {
         public string Title { get; set; }
+        public DateTime AddedTimestamp { get; set; }
         public string FilePath { get; set; }
-        public TaskManager TaskManager { get; }
+        public List<Task> Tasks { get; set; }
 
-        public TodoList(string title, string filePath)
+        public TodoList(string title, string filePath, List<Task> tasks)
         {
             Title = title;
             FilePath = filePath;
-            TaskManager = new TaskManager();
+            Tasks = tasks;
         }
     }
 }
