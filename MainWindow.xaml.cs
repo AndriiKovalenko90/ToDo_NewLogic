@@ -2,6 +2,7 @@
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
+using System.Collections.Specialized;
 using System.ComponentModel;
 using System.IO;
 using System.Linq;
@@ -36,6 +37,7 @@ namespace ToDo_NewLogic
 
                 // Display the recent TodoLists in the left navigation panel
                 List<TodoList> recentTodoLists = _todoListManager.GetRecentTodoLists(9); // Displaying 5 most recent TodoLists
+                
                 foreach (TodoList todoList in recentTodoLists)
                 {
                     RecentLists.Items.Add(todoList.Title);
@@ -53,7 +55,37 @@ namespace ToDo_NewLogic
                 // Show the message
                 NoTodoListsMessage.Visibility = Visibility.Visible;
             }
+
+            ((INotifyCollectionChanged)RecentLists.Items).CollectionChanged += RecentLists_CollectionChanged;
         }
+
+        private void RecentLists_CollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
+        {
+            RecentListsLabel.Visibility = Visibility.Visible;
+            RecentLists.Visibility = Visibility.Visible;
+            NoTodoListsMessage.Visibility = Visibility.Collapsed;
+
+            if (e.Action == NotifyCollectionChangedAction.Add)
+            {
+                // Get the newly added item
+                TodoList newTodoList = e.NewItems[0] as TodoList;
+
+                // Update the UI with the newly added TodoList
+                // For example, you can add the TodoList to the ListBox or update any other UI element
+                // For demonstration purposes, let's assume you have a ListBox named "RecentListBox" to display recent TodoLists
+                // Make sure to bind the ListBox to RecentLists in XAML
+                if (newTodoList != null)
+                {
+                    foreach (TodoList todoList in _todoListManager.GetRecentTodoLists(9))
+                    {
+                        RecentLists.Items.Add(todoList.Title);
+                    }
+
+                }
+            }
+        }
+
+
 
 
         //MAIN MENU BUTTONS
@@ -69,17 +101,30 @@ namespace ToDo_NewLogic
 
                 string directoryPath = Path.GetDirectoryName(newTodoList.FilePath);
                 Directory.CreateDirectory(directoryPath);
+
                 // Add the new TodoList to the TodoListManager
                 _todoListManager.AddTodoList(newTodoList);
+                _todoListManager.SaveTodoLists();
 
-                // Create the TodoList file
+                // use File.WriteAllText to serialize only the new Todolist and save it to the file.
+                // This step ensures that we are not overwriting the entire "todolists.json" file with just a single Todolist;
+                // instead, we are adding the new Todolist to the existing collection of Todolists
                 File.WriteAllText(newTodoList.FilePath, JsonConvert.SerializeObject(newTodoList));
 
                 // Update the RecentLists ListBox
-                RecentLists.Items.Add(newTodoList.Title);
+                //RecentLists.Items.Add(newTodoList.Title);
+                _todoListManager.LoadToDoLists(); // Reload the TodoLists from file to get the updated list
+                List<TodoList> recentTodoLists = _todoListManager.GetRecentTodoLists(9);
+                RecentLists.Items.Clear();
 
-                // Save the TodoLists to the "todolists.json" file
-                _todoListManager.SaveTodoLists();
+                // Sort the TodoLists based on AddedTimeStamp (descending order) before adding them to the ListBox
+                //recentTodoLists = recentTodoLists.OrderByDescending(todoList => todoList.AddedTimestamp).ToList();
+                foreach (TodoList todoList in recentTodoLists)
+                {
+                    RecentLists.Items.Add(todoList.Title);
+                }
+                RecentLists.UpdateLayout();
+
             }
         }
 
