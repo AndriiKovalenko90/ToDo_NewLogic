@@ -33,9 +33,9 @@ namespace ToDo_NewLogic.Managers
             _fileManager.SaveTodoListsToFile("todoLists.json", _todoLists);
         }
 
-        public void AddTodoList(TodoList t)
+        public void AddTodoList(TodoList todoList)
         {
-            _todoLists.Add(t);
+            _todoLists.Add(todoList);
         }
 
         public void RemoveTodoList(TodoList todoList)

@@ -6,7 +6,7 @@ namespace ToDo_NewLogic.Models
     public class TodoList
     {
         public string Title { get; set; }
-        public DateTime AddedTimestamp { get; set; }
+        public DateTime AddedTimestamp { get; set; } = DateTime.Now;
         public string FilePath { get; set; }
         public List<Task> Tasks { get; set; }
 
