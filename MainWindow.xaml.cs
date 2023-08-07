@@ -57,6 +57,26 @@ namespace ToDo_NewLogic
             }
 
             ((INotifyCollectionChanged)RecentLists.Items).CollectionChanged += RecentLists_CollectionChanged;
+            RecentLists.SelectionChanged += RecentLists_SelectionChanged;
+            TasksDataGrid.BeginningEdit += TasksDataGrid_BeginningEdit;
+            TasksDataGrid.CellEditEnding += TasksDataGrid_CellEditEnding;
+        }
+
+        private void RecentLists_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            if (RecentLists.SelectedItem != null)
+            {
+                // Get the title of the selected TodoList
+                string selectedTodoListTitle = RecentLists.SelectedItem.ToString();
+                _hasUnsavedChanges = true;
+                // Use the title to get the corresponding TodoList from the TodoListManager
+                TodoList selectedTodoList = _todoListManager.GetTodoListByTitle(selectedTodoListTitle);
+
+                ContentMain.Visibility = Visibility.Visible;
+                BtnSaveAs.IsEnabled = true;
+                TasksDataGrid.ItemsSource = null;
+                TasksDataGrid.ItemsSource = selectedTodoList.Tasks;
+            }
         }
 
         private void RecentLists_CollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
@@ -123,75 +143,208 @@ namespace ToDo_NewLogic
                 {
                     RecentLists.Items.Add(todoList.Title);
                 }
-                RecentLists.UpdateLayout();
+                //RecentLists.UpdateLayout();
 
             }
         }
 
         private void BtnOpen_Click(object sender, RoutedEventArgs e)
         {
-            
+            OpenFileDialog openFileDialog = new OpenFileDialog();
+            openFileDialog.Filter = "JSON Files|*.json";
+            openFileDialog.Title = "Open TodoList";
+
+            if (openFileDialog.ShowDialog() == true)
+            {
+                try
+                {
+                    // Read the content of the selected JSON file
+                    string jsonContent = File.ReadAllText(openFileDialog.FileName);
+                    
+                    // Deserialize the JSON content to a TodoList object
+                    TodoList openedTodoList = JsonConvert.DeserializeObject<TodoList>(jsonContent);
+
+                    if (RecentLists.Items.Contains(openedTodoList.Title))
+                    {
+                        // Remove it from its current position
+                        RecentLists.Items.Remove(openedTodoList.Title);
+                        _todoListManager.RemoveTodoList(openedTodoList);
+                    }
+                    
+                    openedTodoList.AddedTimestamp = DateTime.UtcNow;
+                    string directoryPath = Path.GetDirectoryName(openFileDialog.FileName);
+                    string fileName = Path.GetFileName(openFileDialog.FileName);
+                    openedTodoList.FilePath = Path.Combine(directoryPath, fileName);
+
+                    // Add the opened TodoList to the TodoListManager
+                    _todoListManager.AddTodoList(openedTodoList);
+                    _todoListManager.SaveTodoLists();
+
+                    // Update the RecentLists ListBox
+                    _todoListManager.LoadToDoLists(); // Reload the TodoLists from file to get the updated list
+                    List<TodoList> recentTodoLists = _todoListManager.GetRecentTodoLists(9);
+
+                    
+                    RecentLists.Items.Clear();
+                    foreach (TodoList todoList in recentTodoLists)
+                    {
+                        RecentLists.Items.Add(todoList.Title);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    // Handle any errors that occur during file reading or deserialization
+                    MessageBox.Show($"Error opening TodoList: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                }
+            }
         }
 
         private void BtnSave_Click(object sender, RoutedEventArgs e)
         {
-            //if (_hasUnsavedChanges)
-            //{
-            //    MessageBoxResult result = MessageBox.Show("Do you want to save changes?", "Save Changes", MessageBoxButton.YesNoCancel, MessageBoxImage.Warning);
-
-            //    switch (result)
-            //    {
-            //        case MessageBoxResult.Yes:
-            //            SaveChanges();
-            //            break;
-            //        case MessageBoxResult.No:
-            //            break;
-            //        case MessageBoxResult.Cancel:
-            //            return;
-            //    }
-            //}
+            if (_hasUnsavedChanges)
+            {
+                SaveChanges();
+                _hasUnsavedChanges = false;
+            }
         }
 
         private void BtnSaveAs_Click(object sender, RoutedEventArgs e)
         {
+            string selectedTodoListTitle = RecentLists.SelectedItem.ToString();
+            TodoList selectedTodoList = _todoListManager.GetTodoListByTitle(selectedTodoListTitle);
 
+            SaveFileDialog saveFileDialog = new SaveFileDialog();
+            saveFileDialog.Filter = "JSON Files|*.json";
+            saveFileDialog.Title = "Save As";
+            saveFileDialog.FileName = "Duplicate_" + selectedTodoList.Title;
+
+            if (saveFileDialog.ShowDialog() == true)
+            {
+                // Create a new TodoList with the provided name
+                string newTitle = Path.GetFileNameWithoutExtension(saveFileDialog.FileName);
+                TodoList newTodoList = new TodoList(newTitle, saveFileDialog.FileName, new List<Task>(selectedTodoList.Tasks));
+
+                // Add the new TodoList to the TodoListManager
+                _todoListManager.AddTodoList(newTodoList);
+                _todoListManager.SaveTodoLists();
+
+                // Serialize and save the new TodoList to its individual JSON file
+                File.WriteAllText(newTodoList.FilePath, JsonConvert.SerializeObject(newTodoList));
+
+                // Update the RecentLists ListBox
+                _todoListManager.LoadToDoLists(); // Reload the TodoLists from file to get the updated list
+                List<TodoList> recentTodoLists = _todoListManager.GetRecentTodoLists(9);
+
+                RecentLists.Items.Clear();
+                foreach (TodoList todoList in recentTodoLists)
+                {
+                    RecentLists.Items.Add(todoList.Title);
+                }
+            }
         }
 
         private void BtnClose_Click(object sender, RoutedEventArgs e)
         {
+            RecentLists.SelectedItem = null;
+            ContentMain.Visibility = Visibility.Collapsed;
         }
 
         private void BtnExit_Click(object sender, RoutedEventArgs e)
         {
+            if (_hasUnsavedChanges)
+            {
+                MessageBoxResult result = MessageBox.Show("Do you want to save changes before exiting?", "Save Changes", MessageBoxButton.YesNoCancel, MessageBoxImage.Warning);
+
+                switch (result)
+                {
+                    case MessageBoxResult.Yes:
+                        // Save changes and exit
+                        SaveChanges();
+                        break;
+                    case MessageBoxResult.No:
+                        // Exit without saving changes
+                        break;
+                    case MessageBoxResult.Cancel:
+                        // Cancel the exit operation
+                        return;
+                }
+            }
             Application.Current.Shutdown();
+        }
+
+        private void SaveChanges()
+        {
+
+            if (RecentLists.SelectedItem is string selectedTodoListTitle)
+            {
+                // Use the title to get the corresponding TodoList from the TodoListManager
+                TodoList selectedTodoList = _todoListManager.GetTodoListByTitle(selectedTodoListTitle);
+
+                if (selectedTodoList != null)
+                {
+                    try
+                    {
+                        // Serialize the updated TodoList object to JSON
+                        string jsonContent = JsonConvert.SerializeObject(selectedTodoList, Formatting.Indented);
+
+                        // Write the JSON content to the individual TodoList file
+                        File.WriteAllText(selectedTodoList.FilePath, jsonContent);
+
+                        // Update the TodoList in the TodoListManager
+                        _todoListManager.SaveTodoLists();
+
+                        // After successfully saving changes, set _hasUnsavedChanges to false
+                        _hasUnsavedChanges = false;
+                    }
+                    catch (Exception ex)
+                    {
+                        // Handle any errors that occur during file writing
+                        MessageBox.Show($"Error saving changes: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                    }
+                }
+            }
         }
 
 
         //Additional buttons
         private void AddTodoListItem_Click(object sender, RoutedEventArgs e)
         {
-            AddItemModal addItemModal = new AddItemModal();
+            AddItemModal addItemModal = new AddItemModal(); 
             bool? result = addItemModal.ShowDialog();
             
             if (result == true)
             {
                 Task newItem = addItemModal.NewItem;
-            }
-        }
+                if (RecentLists.SelectedItem != null)
+                {
+                    string selectedTodoListTitle = RecentLists.SelectedItem.ToString();
+                    TodoList selectedTodoList = _todoListManager.GetTodoListByTitle(selectedTodoListTitle);
 
-        private void AddItemModal_Closed(object sender, EventArgs e)
-        {
-            AddItemModal addItemModal = (AddItemModal)sender;
-            if (addItemModal.DialogResult == true) 
-            {
-                Task newItem = addItemModal.NewItem;
+                    // Add the new task to the selected TodoList
+                    _todoListManager.AddTask(selectedTodoList, newItem);
+                    _hasUnsavedChanges = true;
+                    _todoListManager.SaveTodoLists();
+                    TasksDataGrid.ItemsSource = null;
+                    TasksDataGrid.ItemsSource = selectedTodoList.Tasks;
+                }
             }
-            addItemModal.Closed -= AddItemModal_Closed;
         }
 
         private void BtnActionCompleteTask_Click(object sender, RoutedEventArgs e)
         {
+            if (sender is ToggleButton toggleButton && toggleButton.DataContext is Task taskItem)
+            {
+                string selectedTodoListTitle = RecentLists.SelectedItem.ToString();
+                TodoList selectedTodoList = _todoListManager.GetTodoListByTitle(selectedTodoListTitle);
 
+                //_todoListManager.CompleteTask(selectedTodoList, taskItem);
+                taskItem.IsCompleted = !taskItem.IsCompleted;
+                toggleButton.Content = taskItem.IsCompleted ? "Uncomplete" : "Complete";
+                _hasUnsavedChanges = true;
+                _todoListManager.SaveTodoLists();
+                TasksDataGrid.ItemsSource = null;
+                TasksDataGrid.ItemsSource = selectedTodoList.Tasks;
+            }
         }
 
         private void BtnActionRemoveTask_Click(object sender, RoutedEventArgs e)
@@ -202,6 +355,16 @@ namespace ToDo_NewLogic
 
                 if (result == MessageBoxResult.Yes)
                 {
+                    string selectedTodoListTitle = RecentLists.SelectedItem.ToString();
+                    TodoList selectedTodoList = _todoListManager.GetTodoListByTitle(selectedTodoListTitle);
+
+                    // Remove the task from the selected TodoList
+                    
+                    _todoListManager.RemoveTask(selectedTodoList, taskItem);
+                    _hasUnsavedChanges = true;
+                    _todoListManager.SaveTodoLists();
+                    TasksDataGrid.ItemsSource = null;
+                    TasksDataGrid.ItemsSource = selectedTodoList.Tasks;
                 }
             }
         }
@@ -211,10 +374,12 @@ namespace ToDo_NewLogic
         private void TasksDataGrid_BeginningEdit(object sender, DataGridBeginningEditEventArgs e)
         {
             _hasUnsavedChanges = true;
+            BtnSave.IsEnabled = true;
         }
         private void TasksDataGrid_CellEditEnding(object sender, DataGridCellEditEndingEventArgs e)
         {
             _hasUnsavedChanges = true;
+            BtnSave.IsEnabled = true;
         }
 
 

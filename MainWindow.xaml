@@ -68,10 +68,10 @@
 
                     </MenuItem>
                     <Separator />
-                    <MenuItem Header="Save" x:Name="BtnSave" Click="BtnSave_Click">
+                    <MenuItem Header="Save" x:Name="BtnSave" Click="BtnSave_Click" IsEnabled="False">
 
                     </MenuItem>
-                    <MenuItem Header="Save as" x:Name="BtnSaveAs" Click="BtnSaveAs_Click">
+                    <MenuItem Header="Save as" x:Name="BtnSaveAs" Click="BtnSaveAs_Click" IsEnabled="False">
 
                     </MenuItem>
                     <Separator />

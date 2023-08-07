@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
 using ToDo_NewLogic.Models;
 
 namespace ToDo_NewLogic.Managers
@@ -9,6 +10,7 @@ namespace ToDo_NewLogic.Managers
 
         public TaskManager()
         {
+            
         }
 
         public List<Task> GetTasks()
@@ -28,14 +30,19 @@ namespace ToDo_NewLogic.Managers
             fileManager.SaveTasksToFile(filePath, Tasks);
         }
 
-        public void AddTask(Task task)
+        public void AddTask(TodoList activeTodoList, Task task)
         {
-            Tasks.Add(task);
+            activeTodoList.Tasks.Add(task);
         }
 
-        public void RemoveTask(Task task)
+        public void RemoveTask(TodoList activeTodoList, Task task)
         {
-            Tasks.Remove(task);
+            activeTodoList.Tasks.Remove(task);
+        }
+
+        public void MarkAsCompleted(TodoList activeTodoList, Task task)
+        {
+            activeTodoList.Tasks.First(t => t.Id == task.Id).IsCompleted = true;
         }
     }
 }
