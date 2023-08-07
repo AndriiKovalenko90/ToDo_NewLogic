@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
+using System.Windows;
 using ToDo_NewLogic.Models;
 
 namespace ToDo_NewLogic.Managers
@@ -10,7 +11,6 @@ namespace ToDo_NewLogic.Managers
         private readonly TaskManager _taskManager = new TaskManager();
 
         private List<TodoList> _todoLists = new List<TodoList>();
-        
 
         public List<TodoList> GetTodoLists()
         {
@@ -45,18 +45,30 @@ namespace ToDo_NewLogic.Managers
 
         public TodoList GetTodoListByTitle(string todoListTitle)
         {
-            return _todoLists.FirstOrDefault(t => t.Title == todoListTitle);
+            var todolist = _todoLists.FirstOrDefault(t => t.Title == todoListTitle);
+            if (todolist != null)
+            {
+                return todolist;
+            }
+
+            MessageBox.Show("TodoList not found");
+            return null;
             // what to do in case not found
         }
 
-        public void AddTask(Task task)
+        public void AddTask(TodoList selectedList, Task task)
         {
-            _taskManager.AddTask(task);
+            _taskManager.AddTask(selectedList, task);
         }
 
-        public void RemoveTask(Task task)
+        public void RemoveTask(TodoList selectedList, Task task)
         {
-            _taskManager.RemoveTask(task);
+            _taskManager.RemoveTask(selectedList, task);
+        }
+
+        public void CompleteTask(TodoList selectedList, Task task)
+        {
+            _taskManager.MarkAsCompleted(selectedList, task);
         }
     }
 }
